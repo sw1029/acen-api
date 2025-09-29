@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>acen Admin UI</title>
+    <link rel="stylesheet" href="/ui/assets/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>acen Admin UI</h1>
+      <p>간단 입력 폼으로 DB에 데이터 삽입</p>
+    </header>
+    <main>
+      <section>
+        <h2>환경 설정</h2>
+        <label>API Key <input id="api-key" placeholder="옵션" /></label>
+        <label>User ID <input id="user-id" placeholder="사용자 생성 후 자동 설정" /></label>
+        <p class="hint">보안이 필요한 작업은 API Key, 사용자별 작업은 User ID 헤더를 사용합니다.</p>
+      </section>
+
+      <section>
+        <h2>사용자 생성</h2>
+        <form id="user-form">
+          <label>username <input name="username" /></label>
+          <label>display_name <input name="display_name" /></label>
+          <label>email <input name="email" type="email" /></label>
+          <button type="submit">생성</button>
+          <output id="user-result"></output>
+        </form>
+      </section>
+
+      <section>
+        <h2>Template 생성</h2>
+        <form id="template-form">
+          <label>name <input name="name" required /></label>
+          <label>description <input name="description" /></label>
+          <label>theme <input name="theme" /></label>
+          <details>
+            <summary>Schedules (옵션)</summary>
+            <div id="schedules"></div>
+            <button type="button" id="add-schedule">스케줄 추가</button>
+          </details>
+          <button type="submit">생성</button>
+          <output id="template-result"></output>
+        </form>
+      </section>
+
+      <section>
+        <h2>Schedule 추가</h2>
+        <form id="schedule-form">
+          <label>template_id <input name="template_id" type="number" required /></label>
+          <label>title <input name="title" required /></label>
+          <label>order_index <input name="order_index" type="number" min="0" value="0" /></label>
+          <label>tags <input name="tags" /></label>
+          <label>extra_info <input name="extra_info" /></label>
+          <button type="submit">추가</button>
+          <output id="schedule-result"></output>
+        </form>
+      </section>
+
+      <section>
+        <h2>Product 생성</h2>
+        <form id="product-form">
+          <label>name <input name="name" required /></label>
+          <label>brand <input name="brand" /></label>
+          <label>tags <input name="tags" placeholder="예: 진정,보습" /></label>
+          <label>description <input name="description" /></label>
+          <button type="submit">생성</button>
+          <output id="product-result"></output>
+        </form>
+      </section>
+
+      <section>
+        <h2>Calendar 생성</h2>
+        <form id="calendar-form">
+          <label>name <input name="name" required /></label>
+          <label>description <input name="description" /></label>
+          <button type="submit">생성</button>
+          <output id="calendar-result"></output>
+        </form>
+      </section>
+
+      <section>
+        <h2>Date 생성</h2>
+        <form id="date-form">
+          <label>calendar_id <input name="calendar_id" type="number" required /></label>
+          <label>scheduled_date <input name="scheduled_date" type="date" required /></label>
+          <label>schedule_done <input name="schedule_done" type="number" min="0" value="0" /></label>
+          <label>schedule_total <input name="schedule_total" type="number" min="0" value="0" /></label>
+          <label>notes <input name="notes" /></label>
+          <label>image_path <input name="image_path" /></label>
+          <button type="submit">생성</button>
+          <output id="date-result"></output>
+        </form>
+      </section>
+    </main>
+
+    <script src="/ui/assets/main.js"></script>
+  </body>
+  </html>
