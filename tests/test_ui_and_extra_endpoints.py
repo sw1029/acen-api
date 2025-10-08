@@ -29,12 +29,15 @@ def test_products_and_calendars_endpoints(db_session):
 
     app.dependency_overrides[deps.get_session] = override_session
     with TestClient(app) as client:
+        key_resp = client.post("/api-keys", json={"description": "ui-test"})
+        assert key_resp.status_code == 201
+        api_key = key_resp.json()["key"]
         user = UserRepository(db_session).create(UserCreate(username="ui-user"))
         db_session.flush()
-        headers = {"X-User-Id": str(user.id)}
+        headers = {"X-User-Id": str(user.id), "X-API-Key": api_key}
         # products
         res = client.post(
-            "/products", json={"name": "테스트 제품", "tags": "진정"}
+            "/products", json={"name": "테스트 제품", "tags": "진정"}, headers={"X-API-Key": api_key}
         )
         assert res.status_code == 201
         res = client.get("/products")
@@ -52,16 +55,15 @@ def test_products_and_calendars_endpoints(db_session):
 
 
 def test_api_key_protection(db_session, monkeypatch):
-    # API_KEY 활성화 시 헤더 없으면 401
-    monkeypatch.setenv("API_KEY", "secret")
-
     def override_session():
         return db_session
 
     app.dependency_overrides[deps.get_session] = override_session
     with TestClient(app) as client:
-        r = client.post("/products", json={"name": "A"})
+        first = client.post("/api-keys", json={"description": "base"})
+        key = first.json()["key"]
+        r = client.post("/api-keys", json={"description": "second"})
         assert r.status_code == 401
-        r = client.post("/products", headers={"X-API-Key": "secret"}, json={"name": "A"})
-        assert r.status_code in (201, 422)  # 최소 보호 확인 (필수 필드 부족 시 422 가능)
+        r = client.post("/api-keys", headers={"X-API-Key": key}, json={"description": "second"})
+        assert r.status_code == 201
     app.dependency_overrides.clear()

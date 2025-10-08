@@ -36,6 +36,7 @@ from .template import (
     TemplateUpdate,
 )
 from .user import UserBase, UserCreate, UserRead
+from .api_key import ApiKeyBase, ApiKeyCreate, ApiKeyRead
 
 __all__ = [
     "APIModel",
@@ -78,4 +79,7 @@ __all__ = [
     "UserBase",
     "UserCreate",
     "UserRead",
+    "ApiKeyBase",
+    "ApiKeyCreate",
+    "ApiKeyRead",
 ]

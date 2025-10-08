@@ -6,6 +6,7 @@ from .feedback import FeedbackRepository, SuggestRepository
 from .product import ProductRepository
 from .template import ScheduleRepository, TemplateRepository
 from .user import UserRepository
+from .api_key import ApiKeyRepository
 
 __all__ = [
     "BaseRepository",
@@ -17,4 +18,5 @@ __all__ = [
     "FeedbackRepository",
     "SuggestRepository",
     "UserRepository",
+    "ApiKeyRepository",
 ]

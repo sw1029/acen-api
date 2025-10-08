@@ -18,25 +18,23 @@ def _image_bytes(fmt: str = "PNG") -> bytes:
     return bio.getvalue()
 
 
-def test_upload_image_requires_key(db_session, monkeypatch):
-    monkeypatch.setenv("API_KEY", "secret")
-
+def test_upload_image_requires_key(db_session):
     def override_session():
         return db_session
 
     app.dependency_overrides[deps.get_session] = override_session
     with TestClient(app) as client:
+        key = client.post("/api-keys", json={"description": "upload"}).json()["key"]
         files = {"file": ("a.png", _image_bytes(), "image/png")}
         r = client.post("/uploads", files=files)
         assert r.status_code == 401
-        r = client.post("/uploads", files=files, headers={"X-API-Key": "secret"})
+        r = client.post("/uploads", files=files, headers={"X-API-Key": key})
         assert r.status_code == 200
         assert r.json()["relative_path"].endswith(".png")
     app.dependency_overrides.clear()
 
 
 def test_upload_image_size_limit(db_session, monkeypatch):
-    monkeypatch.setenv("API_KEY", "secret")
     monkeypatch.setenv("UPLOAD_MAX_BYTES", "10")
 
     def override_session():
@@ -44,8 +42,8 @@ def test_upload_image_size_limit(db_session, monkeypatch):
 
     app.dependency_overrides[deps.get_session] = override_session
     with TestClient(app) as client:
+        key = client.post("/api-keys", json={"description": "upload"}).json()["key"]
         files = {"file": ("a.png", b"1" * 20, "image/png")}
-        r = client.post("/uploads", files=files, headers={"X-API-Key": "secret"})
+        r = client.post("/uploads", files=files, headers={"X-API-Key": key})
         assert r.status_code == 400
     app.dependency_overrides.clear()
-

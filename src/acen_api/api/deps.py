@@ -16,7 +16,7 @@ from ..services import (
     RuleBasedClassifier,
 )
 from ..config import AppSettings
-from ..repositories import UserRepository
+from ..repositories import ApiKeyRepository, UserRepository
 
 
 def get_session(db: Session = Depends(get_db)) -> Generator[Session, None, None]:
@@ -52,14 +52,26 @@ def get_classifier() -> RuleBasedClassifier:
     return RuleBasedClassifier()
 
 
-def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
-    """환경에 API_KEY가 지정된 경우에만 헤더 검증을 수행."""
+def get_api_key_repo(session: Session = Depends(get_session)) -> ApiKeyRepository:
+    return ApiKeyRepository(session)
 
-    settings = AppSettings()
-    if not settings.api_key:
+
+def require_api_key(
+    x_api_key: str | None = Header(default=None),
+    repo: ApiKeyRepository = Depends(get_api_key_repo),
+) -> None:
+    """DB에 저장된 API Key 유효성 검증."""
+
+    active = repo.count_active()
+    if active == 0:
+        # 초기 상태에서는 키 없이 접근 허용
         return
 
-    if x_api_key != settings.api_key:
+    if not x_api_key:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="API key required")
+
+    api_key = repo.get_by_key(x_api_key)
+    if not api_key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
 
 

@@ -209,6 +209,32 @@ acen API 구현 TODO
   - [x] `/users` CRUD 및 `/ui` 사용자 선택 스모크 테스트
 - 완료 기준: 사용자 단위로 캘린더/일자/피드백이 분리 관리되며 사용자 생성/삭제/데이터 입력이 UI와 API에서 가능
 
+15. API Key DB 관리 및 발급/회수 시스템
+선행: 14(User 구조), 9(API)
+- [x] DB 스키마/모델
+  - [x] `api_keys` 테이블 추가 (`id`, `key`, `description`, `created_at`, `revoked_at` 등)
+  - [x] ORM 모델/스키마(`ApiKeyCreate`, `ApiKeyRead`) 정의
+- [x] 리포지토리/서비스
+  - [x] `ApiKeyRepository` (생성/목록/회수/검증)
+  - [x] `deps.require_api_key`가 DB 조회 기반으로 전환
+  - [ ] 유효 키 캐시 전략(선택) 또는 ORM 조회 최적화
+- [x] API 라우터
+  - [x] `POST /api-keys`
+  - [x] `GET /api-keys`
+  - [x] `DELETE /api-keys/{id}` (회수)
+  - [x] 인증 정책: 최초 한 건은 무인증 허용, 이후 키 필요
+- [x] UI/스크립트 연동
+  - [x] `/ui`에 API Key 관리 섹션 추가 (발급→키 표시, 목록/회수 기능)
+  - [x] `generate_api_key.py`를 API 호출 기반으로 변경
+- [x] 기존 보호 로직 교체
+  - [x] `X-API-Key` 헤더 검증이 DB 키 기반으로 동작
+  - [x] 키 폐기 후 API 호출 재인증 확인 (테스트 포함)
+- [x] 테스트
+  - [x] 키 발급/회수/목록 API 단위 테스트
+  - [x] 보호된 엔드포인트에서 허용/차단 시나리오 검증
+  - [x] UI 스모크 테스트 (발급→회수)
+- 완료 기준: API 호출만으로 키 발급/회수가 가능하고, 모든 보호 엔드포인트가 DB 기반 키 검증을 사용
+
 부록: 구현 세부 제안(파일/심화)
 - 앱 팩토리: `create_app()`에서 라우터 등록, 미들웨어(CORS, GZip)
 - 의존성: `get_db`, `get_storage`, `get_model`

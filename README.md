@@ -116,3 +116,18 @@ pytest
   # 혹은 cURL 버전
   API_KEY=your_key BASE_URL=http://localhost:8000 ./scripts/seed.sh
   ```
+
+## API Key 발급 및 관리
+- API를 통해 키 발급/회수 수행 (`/api-keys`)
+  ```bash
+  # 최초 키 발급 (키가 하나도 없을 때는 인증 없이 발급 가능)
+  curl -X POST http://localhost:8000/api-keys -H "Content-Type: application/json" -d '{"description":"admin"}'
+
+  # 키가 존재한 이후 발급/목록/회수는 X-API-Key 헤더 필요
+  curl -X GET http://localhost:8000/api-keys -H "X-API-Key: <발급받은키>"
+  curl -X DELETE http://localhost:8000/api-keys/1 -H "X-API-Key: <발급받은키>"
+  ```
+- `scripts/generate_api_key.py`로 API 호출 기반 발급 가능
+  ```bash
+  python scripts/generate_api_key.py --base-url http://localhost:8000 --admin-key <기존키>
+  ```

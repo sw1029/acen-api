@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import date as date_type
+from datetime import date as date_type, datetime
 
 from sqlalchemy import Date as SADate
-from sqlalchemy import Float, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin
@@ -28,6 +28,17 @@ class User(TimestampMixin, Base):
     dates: Mapped[list["Date"]] = relationship(
         back_populates="user", cascade="all, delete-orphan", passive_deletes=True
     )
+
+
+class ApiKey(TimestampMixin, Base):
+    """API 호출 보호용 키."""
+
+    __tablename__ = "api_keys"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    key: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class Template(TimestampMixin, Base):

@@ -11,6 +11,7 @@ from .entities import (
     Suggest,
     Template,
     User,
+    ApiKey,
 )
 
 __all__ = [
@@ -25,4 +26,5 @@ __all__ = [
     "Product",
     "Suggest",
     "User",
+    "ApiKey",
 ]

@@ -20,6 +20,27 @@
       </section>
 
       <section>
+        <h2>API Key 관리</h2>
+        <form id="apikey-form">
+          <label>description <input name="description" placeholder="옵션" /></label>
+          <button type="submit">발급</button>
+        </form>
+        <output id="apikey-result"></output>
+        <table id="apikey-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>설명</th>
+              <th>생성일</th>
+              <th>회수일</th>
+              <th>작업</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section>
         <h2>사용자 생성</h2>
         <form id="user-form">
           <label>username <input name="username" /></label>

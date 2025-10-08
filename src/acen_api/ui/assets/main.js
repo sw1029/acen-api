@@ -6,6 +6,7 @@ const state = {
 function buildHeaders({ requireUser = true, requireApiKey = true, json = true } = {}) {
   const headers = {};
   if (json) headers['Content-Type'] = 'application/json';
+  headers['Accept'] = 'application/json';
 
   if (state.apiKey) headers['X-API-Key'] = state.apiKey;
   else if (requireApiKey) throw new Error('API Key가 필요합니다. 상단에서 입력하세요.');
@@ -23,6 +24,20 @@ async function postJSON(url, data, options = {}) {
     headers: buildHeaders({ requireUser, requireApiKey, json: true }),
     body: JSON.stringify(data),
   });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw body;
+  return body;
+}
+
+async function getJSON(url, { requireUser = false, requireApiKey = false } = {}) {
+  const headers = {};
+  try {
+    Object.assign(headers, buildHeaders({ requireUser, requireApiKey, json: false }));
+  } catch (err) {
+    // 키가 필요하지만 없는 경우 호출하지 않음
+    throw err;
+  }
+  const res = await fetch(url, { headers });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw body;
   return body;
@@ -60,6 +75,31 @@ window.addEventListener('DOMContentLoaded', () => {
   apiKeyInput?.addEventListener('input', () => { state.apiKey = apiKeyInput.value.trim(); });
   userIdInput?.addEventListener('input', () => { state.userId = userIdInput.value.trim(); });
 
+  const apiKeyTableBody = qs('#apikey-table tbody');
+  async function refreshApiKeys() {
+    try {
+      const keys = await getJSON('/api-keys', { requireApiKey: !!state.apiKey, requireUser: false });
+      apiKeyTableBody.innerHTML = '';
+      keys.forEach((item) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.id}</td>
+          <td>${item.description ?? ''}</td>
+          <td>${item.created_at ?? ''}</td>
+          <td>${item.revoked_at ?? ''}</td>
+          <td>
+            ${item.revoked_at ? '' : `<button data-id="${item.id}" class="revoke-key">회수</button>`}
+          </td>
+        `;
+        apiKeyTableBody.appendChild(tr);
+      });
+    } catch (err) {
+      if (String(err).includes('API Key가 필요')) {
+        apiKeyTableBody.innerHTML = '<tr><td colspan="5">API Key 입력 후 새로고칠 수 있습니다.</td></tr>';
+      }
+    }
+  }
+
   // schedules container
   const schedContainer = qs('#schedules');
   const addBtn = qs('#add-schedule');
@@ -83,6 +123,43 @@ window.addEventListener('DOMContentLoaded', () => {
       if (userIdInput) userIdInput.value = state.userId;
     } catch (err) {
       out.textContent = `오류: ${renderError(err)}`;
+    }
+  });
+
+  const apiKeyForm = qs('#apikey-form');
+  apiKeyForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(apiKeyForm);
+    const payload = { description: fd.get('description') || null };
+    const out = qs('#apikey-result');
+    try {
+      const res = await postJSON('/api-keys', payload, { requireApiKey: !!state.apiKey, requireUser: false });
+      out.textContent = `새 키: ${res.key}`;
+      state.apiKey = res.key;
+      if (apiKeyInput) apiKeyInput.value = state.apiKey;
+      await refreshApiKeys();
+    } catch (err) {
+      out.textContent = `오류: ${renderError(err)}`;
+    }
+  });
+
+  apiKeyTableBody?.addEventListener('click', async (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.classList.contains('revoke-key')) {
+      const id = target.dataset.id;
+      if (!id) return;
+      try {
+        const headers = buildHeaders({ requireApiKey: true, requireUser: false, json: false });
+        const res = await fetch(`/api-keys/${id}`, { method: 'DELETE', headers });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw body;
+        }
+        await refreshApiKeys();
+      } catch (err) {
+        alert(`회수 실패: ${renderError(err)}`);
+      }
     }
   });
 
@@ -187,4 +264,6 @@ window.addEventListener('DOMContentLoaded', () => {
       out.textContent = `오류: ${renderError(err)}`;
     }
   });
+
+  refreshApiKeys();
 });

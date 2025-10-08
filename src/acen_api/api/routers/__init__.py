@@ -11,6 +11,7 @@ from .products import router as products_router
 from .calendars import router as calendars_router
 from .uploads import router as uploads_router
 from .users import router as users_router
+from .api_keys import router as api_keys_router
 from .templates import router as templates_router
 
 api_router = APIRouter()
@@ -24,6 +25,7 @@ api_router.include_router(evaluate_router)
 api_router.include_router(feedback_router)
 api_router.include_router(uploads_router)
 api_router.include_router(users_router)
+api_router.include_router(api_keys_router)
 
 __all__ = [
     "api_router",
@@ -35,4 +37,5 @@ __all__ = [
     "feedback_router",
     "uploads_router",
     "users_router",
+    "api_keys_router",
 ]
